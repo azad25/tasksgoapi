@@ -9,6 +9,7 @@ import (
 
 	"taskmanager/db"
 	"taskmanager/models"
+	"taskmanager/validation"
 )
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -22,11 +23,22 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//create task and send created task
-	db.DB.Create(&task)
-	w.Header().Set("Content-Type", "application/json")
-	//encode to json and send task
-	json.NewEncoder(w).Encode(task)
+	//validate request
+	ValidationErrors := validation.ValidateTask(task)
+
+	if ValidationErrors != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ValidationErrors)
+		return
+	} else {
+		//create task and send created task
+		db.DB.Create(&task)
+		w.Header().Set("Content-Type", "application/json")
+		//encode to json and send task
+		json.NewEncoder(w).Encode(task)
+	}
+
 }
 
 func GetTasks(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +92,16 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//validate request
+	ValidationErrors := validation.ValidateTask(task)
+
+	if ValidationErrors != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ValidationErrors)
 		return
 	}
 
