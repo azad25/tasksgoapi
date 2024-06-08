@@ -42,9 +42,36 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTasks(w http.ResponseWriter, r *http.Request) {
-	var tasks []models.Task
+	// Parse pagination parameters from the query string
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
 
-	db.DB.Find(&tasks)
+	// Default values for pagination
+	page := 1
+	limit := 10
+
+	// Convert page and limit to integers
+	if pageStr != "" {
+		p, err := strconv.Atoi(pageStr)
+		if err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		l, err := strconv.Atoi(limitStr)
+		if err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	// Get tasks from the database with pagination
+	var tasks []models.Task
+	db.DB.Offset(offset).Limit(limit).Find(&tasks)
+
+	// Return tasks as JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(tasks)
 }
