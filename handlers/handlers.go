@@ -157,3 +157,26 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	db.DB.Delete(&task)
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func CompleteTask(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var task models.Task
+	result := db.DB.First(&task, id)
+	if result.Error != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//set complete to true of tasks
+	task.Completed = true
+	db.DB.Save(&task)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(task)
+}

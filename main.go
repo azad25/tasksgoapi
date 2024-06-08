@@ -32,6 +32,7 @@ func main() {
 	router.HandleFunc("/tasks/{id}", handlers.GetTask).Methods("GET")
 	router.HandleFunc("/tasks/{id}", handlers.UpdateTask).Methods("PUT")
 	router.HandleFunc("/tasks/{id}", handlers.DeleteTask).Methods("DELETE")
+	router.HandleFunc("/complete/{id}", handlers.CompleteTask).Methods("GET")
 
 	//start the server
 	log.Println("Server is running on port 8080")
